@@ -31,7 +31,7 @@ Item item=getItem(position);
         viewHolder.ItemImage=(ImageView)view.findViewById(R.id.item_image);
         viewHolder.ItemName=(TextView)view.findViewById(R.id.item_name);
         viewHolder.ItemPrice=(TextView)view.findViewById(R.id.item_price);
-        viewHolder.ItemPlace=(TextView)view.findViewById(R.id.item_place);
+        viewHolder.ItemScore=(TextView)view.findViewById(R.id.item_score);
         viewHolder.ItemNumber=(TextView)view.findViewById(R.id.item_number);
 
 
@@ -40,11 +40,11 @@ Item item=getItem(position);
     }
     else{ view=convertView;
     viewHolder=(ViewHolder)view.getTag();}
-    viewHolder.ItemImage.setImageResource(item.getImageId());
-    viewHolder.ItemName.setText(item.getName());
-    viewHolder.ItemPrice.setText(String.valueOf(item.getPrice()));
-    viewHolder.ItemPlace.setText(String.valueOf(item.getPlace()));
-    viewHolder.ItemNumber.setText(String.valueOf(item.getNumber()));
+    viewHolder.ItemImage.setImageResource(Integer.parseInt(item.getImageId()));
+    viewHolder.ItemName.setText("商品名称:"+item.getName());
+    viewHolder.ItemPrice.setText("价格: ￥"+String.valueOf(item.getPrice()));
+    viewHolder.ItemScore.setText("平均得分:"+String.valueOf(item.getScore()));
+    viewHolder.ItemNumber.setText("点赞数: "+String.valueOf(item.getNumber()));
     return view;}
 
     class ViewHolder
@@ -52,7 +52,7 @@ Item item=getItem(position);
     ImageView ItemImage;
     TextView ItemName;
     TextView ItemPrice;
-    TextView ItemPlace;
+    TextView ItemScore;
     TextView ItemNumber;
     }
 
