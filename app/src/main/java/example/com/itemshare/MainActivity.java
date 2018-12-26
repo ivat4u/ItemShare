@@ -13,7 +13,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -32,8 +36,16 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import com.tencent.tauth.Tencent;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+
 
 public class MainActivity extends AppCompatActivity implements WbShareCallback {
     private Tencent mTencent;
@@ -42,7 +54,20 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
     WbShareHandler shareHandler;
     private MyIUiListener mIUiListener;
     String mAppid="1108060298";
+    Bitmap bitmap;
+    public static Bitmap getBitmap(String path) throws IOException {
 
+        URL url = new URL(path);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setConnectTimeout(5000);
+        conn.setRequestMethod("GET");
+        if (conn.getResponseCode() == 200){
+            InputStream inputStream = conn.getInputStream();
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
+            return bitmap;
+        }
+        return null;
+    }
         private List<Item> ItemList = new ArrayList<Item>();
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +83,7 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
             mTencent = Tencent.createInstance("1108060298",getApplicationContext());
             ItemAdapter adapter = new ItemAdapter(MainActivity.this,
                     R.layout.item_item, ItemList);
+
             ListView listView = (ListView) findViewById(R.id.list_view);
             listView.setAdapter(adapter);
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
@@ -65,8 +91,6 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                 public void onItemClick(AdapterView<?>parent, View view, int position, long id){
                     Item Item=ItemList.get(position);
                     Toast.makeText(MainActivity.this,Item.getName(),Toast.LENGTH_SHORT).show();
-                    Intent intent=new Intent(MainActivity.this,ShareActivity_wb.class);
-                    startActivity(intent);
                 }
             });
             listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
@@ -151,9 +175,9 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                         @Override
                         public void onClick(View v) {
                             String APP_ID=Constants.APP_ID;
-                            IWXAPI api = WXAPIFactory.createWXAPI(MyApplication.getContext(), APP_ID, false);
+                            IWXAPI api = WXAPIFactory.createWXAPI(MainActivity.this, APP_ID, false);
                             api.registerApp(APP_ID);
-                            WXWebpageObject webpage = new WXWebpageObject();
+                                WXWebpageObject webpage = new WXWebpageObject();
                             webpage.webpageUrl = "http://www.xxxx.com/wap/showShare/";//收到分享的好友点击会跳转到这个地址里面去
                             WXMediaMessage msg = new WXMediaMessage(webpage);
                             msg.title = "我在智能分享平台看见一件不错的商品，推荐给大家\t";
@@ -197,31 +221,75 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                     }
 
             });
+            FrameLayout inludelayout=(FrameLayout)findViewById(R.id.menu_new);
+            ImageButton new_item=(ImageButton)inludelayout.findViewById(R.id.fab);
+            new_item.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setIcon(R.drawable.icon_29);
+                    builder.setTitle("上传一个商品");
+                    View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.layout_xinjian, null);
+                    builder.setView(view);
+                    final EditText name_good = (EditText)view.findViewById(R.id.name_good);
+                    final EditText price = (EditText)view.findViewById(R.id.price);
+                    final EditText imagegood= (EditText)view.findViewById(R.id.image_good);
+                    final EditText class_good = (EditText)view.findViewById(R.id.class_good);
+
+                    builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            String a = name_good.getText().toString().trim();
+                            String b = price.getText().toString().trim();
+                            String url = imagegood.getText().toString().trim();
+                            String d= class_good.getText().toString().trim();
+                            Random rand=new Random();
+                            Bitmap bp= null;
+                            try {
+                                bp = getBitmap(url);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            adapter.add(new Item(a,rand.nextInt(100),b,5,"0",bp,1,d));
+                        }
+                    });
+                    builder.setNegativeButton("取消", new DialogInterface.OnClickListener()
+{
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            dialog.dismiss();
+                        }
+                    });builder.show();
+
+                }
+            });
         }
 
 
 
         private void initItems() {
             for (int i = 0; i < 2; i++) {
-                Item apple = new Item("Apple", 12,"25",4,"50", R.drawable.apple_pic+"",101,"Food");
+                Item apple = new Item("life", 1,"100",6,"17", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good1),2,"生活");
                 ItemList.add(apple);
-                Item banana = new Item("Apple", 12,"25",4,"50", R.drawable.banana_pic+"",101,"Food");
+                Item banana = new Item("sport", 2,"25",7,"777", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good2),2,"运动");
                 ItemList.add(banana);
-                Item orange = new Item("Apple", 12,"25",4,"50", R.drawable.orange_pic+"",101,"Food");
+                Item orange = new Item("dight", 3,"99",9,"555", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good3),101,"摄影");
                 ItemList.add(orange);
-                Item watermelon= new Item("Apple", 12,"25",4,"50", R.drawable.watermelon_pic+"",101,"Food");
+                Item watermelon= new Item("test", 4,"123",4,"50", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good4),101,"运动");
                 ItemList.add(watermelon);
-                Item pear = new Item("Apple", 12,"25",4,"50", R.drawable.pear_pic+"",101,"Food");
+                Item pear = new Item("game", 5,"469",4,"50", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good5),101,"运动");
                 ItemList.add(pear);
-                Item grape= new Item("Apple", 12,"25",4,"50", R.drawable.grape_pic+"",101,"Food");
+                Item grape= new Item("life2", 11,"101",4,"50",BitmapFactory.decodeResource (getResources(),R.drawable.ic_good6),101,"娱乐");
                 ItemList.add(grape);
-                Item pineapple= new Item("Apple", 12,"25",4,"50", R.drawable.pineapple_pic+"",101,"Food");
+                Item pineapple= new Item("soprt", 22,"666",4,"50", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good7),101,"游戏");
                 ItemList.add(pineapple);
-                Item strawberry = new Item("Apple", 12,"25",4,"50", R.drawable.strawberry_pic+"",101,"Food");
+                Item strawberry = new Item("game", 55,"444",4,"50", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good8),101,"游戏");
                 ItemList.add(strawberry);
-                Item cherry= new Item("Apple", 12,"25",4,"50", R.drawable.cherry_pic+"",101,"Food");
+                Item cherry= new Item("tatat", 66,"11",4,"111", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good5),101,"游戏");
                 ItemList.add(cherry);
-                Item mango = new Item("Apple", 12,"25",4,"50", R.drawable.mango_pic+"",101,"Food");
+                Item mango = new Item("dada", 111,"1",4,"50", BitmapFactory.decodeResource (getResources(),R.drawable.ic_good9),101,"生活");
                 ItemList.add(mango);
             }
         }

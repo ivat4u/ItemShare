@@ -40,7 +40,7 @@ Item item=getItem(position);
     }
     else{ view=convertView;
     viewHolder=(ViewHolder)view.getTag();}
-    viewHolder.ItemImage.setImageResource(Integer.parseInt(item.getImageId()));
+    viewHolder.ItemImage.setImageBitmap(item.getImageId());
     viewHolder.ItemName.setText("商品名称:"+item.getName());
     viewHolder.ItemPrice.setText("价格: ￥"+String.valueOf(item.getPrice()));
     viewHolder.ItemScore.setText("平均得分:"+String.valueOf(item.getScore()));

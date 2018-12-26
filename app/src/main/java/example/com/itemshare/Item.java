@@ -1,12 +1,14 @@
 package example.com.itemshare;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by hasee on 2017/8/15.
  */
 
 public class Item {
     private String name;
-    private String imageId;
+    private Bitmap imageId;
     private String price;
     private String number;
     private int good_id;
@@ -14,7 +16,7 @@ public class Item {
     private int user_id;
     private String var;
 
-    public Item(String Name,int good_id,String price,int score,String number,String imageId,int user_id,String var){
+    public Item(String Name, int good_id, String price, int score, String number, Bitmap imageId, int user_id, String var){
         this.name=Name;
         this.imageId=imageId;
         this.good_id=good_id;
@@ -27,7 +29,7 @@ public class Item {
     public String getName(){
         return  name;
     }
-    public String getImageId(){
+    public Bitmap getImageId(){
         return  imageId;
     }
 
