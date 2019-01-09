@@ -1,11 +1,13 @@
 package example.com.itemshare;
 
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -36,8 +38,11 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import com.tencent.tauth.Tencent;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -90,12 +95,20 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                 @Override
                 public void onItemClick(AdapterView<?>parent, View view, int position, long id){
                     Item Item=ItemList.get(position);
+                    Intent intent=new Intent();
+                    intent.setAction("android.intent.action.VIEW");
+                    Uri CONTENT_URI_BROWSERS = Uri.parse("http://123.207.247.90/sharegoods/inform.html");
+                    intent.setData(CONTENT_URI_BROWSERS);
+                    intent.setComponent(new ComponentName("com.android.browser", "com.android.browser.BrowserActivity"));
+                    startActivity(intent);
                     Toast.makeText(MainActivity.this,Item.getName(),Toast.LENGTH_SHORT).show();
                 }
             });
             listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
                 @Override
                 public boolean onItemLongClick(AdapterView<?>parent, View view, int position, long id){
+                    Item Item=ItemList.get(position);
+                    Bitmap img=Item.getImageId();
                     Dialog      dialog = new Dialog(MainActivity.this);
                     dialog.setTitle("分享：");
                     dialog.setContentView(R.layout.dialog);
@@ -158,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                                  */
                                 private ImageObject getImageObj(Context context) {
                                     ImageObject imageObject = new ImageObject();
-                                    Bitmap  bitmap = BitmapFactory.decodeResource(context.getResources(), R.mipmap.ic_share_qrcode);
+                                    Bitmap  bitmap = img;
                                     imageObject.setImageObject(bitmap);
                                     return imageObject;
                                 }
@@ -184,9 +197,8 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                             msg.description = "我在智能分享平台看见一件不错的商品，推荐给大家\t";
                             try
                             {
-                                Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.sen_img);
-                                Bitmap thumbBmp = Bitmap.createScaledBitmap(bmp, 150, 150, true);
-                                bmp.recycle();
+                                Bitmap thumbBmp = Bitmap.createScaledBitmap(img, 150, 150, true);
+                                img.recycle();
                                 msg.setThumbImage(thumbBmp);
                             }
                             catch (Exception e)
@@ -201,6 +213,17 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                         }
                     });
                     vie_qq.setOnClickListener(new View.OnClickListener() {
+                        public  Uri bitmap2uri(Context c, Bitmap b) {
+                            File path = new File(c.getCacheDir() + File.separator + System.currentTimeMillis() + ".jpg");
+                            try {
+                                OutputStream os = new FileOutputStream(path);
+                                b.compress(Bitmap.CompressFormat.JPEG, 100, os);
+                                os.close();
+                                return Uri.fromFile(path);
+                            } catch (Exception ignored) {
+                            }
+                            return null;
+                        }
                         @Override
                         public void onClick(View v) {
                             final Bundle params = new Bundle();
@@ -208,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements WbShareCallback {
                             params.putString(QQShare.SHARE_TO_QQ_TITLE, "购物分享");
                             params.putString(QQShare.SHARE_TO_QQ_SUMMARY,  "我在智能分享平台看见一件不错的商品，推荐给大家\t");
                             params.putString(QQShare.SHARE_TO_QQ_TARGET_URL,  "http://www.qq.com/news/1.html");
-                            params.putString(QQShare.SHARE_TO_QQ_IMAGE_URL, "http://imgcache.qq.com/qzone/space_item/pre/0/66768.gif");
+                            params.putString(QQShare.SHARE_TO_QQ_IMAGE_LOCAL_URL, String.valueOf(bitmap2uri(MainActivity.this,img)));
                             params.putString(QQShare.SHARE_TO_QQ_APP_NAME,  "智能购物分享");
                             mTencent.shareToQQ(MainActivity.this, params, new MyIUiListener());
                         }

@@ -1,13 +1,18 @@
 package example.com.itemshare;
 
 
+import android.content.ComponentName;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.os.StrictMode;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,8 +20,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -27,9 +34,13 @@ public class LoginActy extends AppCompatActivity {
     static int logined=0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
+        builder.detectFileUriExposure();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         Button key_login= (Button) findViewById(R.id.log_in);
+        TextView key_logup=(TextView)findViewById(R.id.tv_name);
         final EditText  usr=(EditText)findViewById(R.id.ed_name);
         final EditText psw=(EditText)findViewById(R.id.ed_pass);
         StrictMode.ThreadPolicy policy=new StrictMode.ThreadPolicy.Builder().permitAll().build();
@@ -45,7 +56,19 @@ public class LoginActy extends AppCompatActivity {
         values.put("username", "kei");
         values.put("password", "kei");
         db.insert("users", null, values);
+        key_logup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //file:///android_asset/register.html
+                Intent intent=new Intent();
+                intent.setAction("android.intent.action.VIEW");
+                Uri CONTENT_URI_BROWSERS = Uri.parse("http://123.207.247.90/sharegoods/register.html");
+                intent.setData(CONTENT_URI_BROWSERS);
+                intent.setComponent(new ComponentName("com.android.browser", "com.android.browser.BrowserActivity"));
+                startActivity(intent);
+            }
 
+        });
         key_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,4 +113,16 @@ public class LoginActy extends AppCompatActivity {
         }});
 
 }
+    public static void installApkFile(Context context, String filePath) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            Uri contentUri = FileProvider.getUriForFile(context, "com.yuneec.android.saleelfin.fileprovider", new File(filePath));
+            intent.setDataAndType(contentUri, "application/vnd.android.package-archive");
+        } else {
+            intent.setDataAndType(Uri.fromFile(new File(filePath)), "application/vnd.android.package-archive");
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        context.startActivity(intent);
+    }
 }

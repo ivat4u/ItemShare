@@ -59,4 +59,4 @@ dependencies {
     }
     implementation files('libs/mysql-connector-java-5.1.42-bin.jar')
     implementation 'com.android.support:design:26.0.1'
-    compile 'com.android.support:design:23.1.1'}
+    compile 'com.android.support:design:26.0.1'}
